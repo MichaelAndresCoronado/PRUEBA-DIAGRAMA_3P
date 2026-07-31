@@ -40,6 +40,7 @@ classDef backend fill:#e8f5e9,stroke:#388e3c,color:#000;
 classDef rabbit fill:#ffebee,stroke:#d32f2f,color:#000;
 classDef mongo fill:#dcedc8,stroke:#4CAF50,color:#000;
 classDef audit fill:#fff3e0,stroke:#fb8c00,color:#000;
+classDef service fill:#ffffff,stroke:#6c757d,color:#000;
 
 U([Cliente]):::user
 I[Ingress Controller<br/>conjunta3p.espe.edu.ec]:::ingress
@@ -48,39 +49,50 @@ U --> I
 
 subgraph Kubernetes Cluster
 
-FS[frontend-svc]:::frontend
-BS[backend-svc]:::backend
-AS[audit-svc]:::audit
-RS[rabbitmq-svc]:::rabbit
-MS[mongodb-svc]:::mongo
+  subgraph Frontend Layer
+  FS[frontend-svc]:::service
+  FP[Frontend<br/>Nginx + JS]:::frontend
+  FS --> FP
+  end
 
-FP[Frontend<br/>Nginx + JS]:::frontend
-BP[Backend<br/>NestJS]:::backend
-A1[Audit Replica 1]:::audit
-A2[Audit Replica 2]:::audit
-RB[(RabbitMQ)]:::rabbit
-DB[(MongoDB)]:::mongo
+  subgraph Backend Layer
+  BS[backend-svc]:::service
+  BP[Backend<br/>NestJS]:::backend
+  BS --> BP
+  end
 
-I --> FS
-I --> BS
-I --> AS
+  subgraph Audit Layer
+  AS[audit-svc]:::service
+  A1[Audit Replica 1]:::audit
+  A2[Audit Replica 2]:::audit
+  AS --> A1
+  AS --> A2
+  end
 
-FS --> FP
-BS --> BP
-AS --> A1
-AS --> A2
+  subgraph Messaging and Data
+  RS[rabbitmq-svc]:::service
+  MS[mongodb-svc]:::service
+  RB[(RabbitMQ)]:::rabbit
+  DB[(MongoDB)]:::mongo
+  RS --> RB
+  MS --> DB
+  end
 
-BP -->|REST| DB
-BP -->|Publish Event| RB
+  I --> FS
+  I --> BS
+  I --> AS
 
-A1 -->|Consume| RB
-A2 -->|Consume| RB
+  BP -->|REST| DB
+  BP -->|Publish Event| RB
 
-A1 -->|Guardar Auditoría| DB
-A2 -->|Guardar Auditoría| DB
+  A1 -->|Consume| RB
+  A2 -->|Consume| RB
 
-A1 -->|SSE| FP
-A2 -->|SSE| FP
+  A1 -->|Guardar Auditoría| DB
+  A2 -->|Guardar Auditoría| DB
+
+  A1 -->|SSE| FP
+  A2 -->|SSE| FP
 
 end
 ```
