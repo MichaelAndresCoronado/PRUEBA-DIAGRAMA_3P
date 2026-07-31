@@ -6,8 +6,8 @@
 
 **Autores**
 
-- Michael Andrés Coronado Achig — Infraestructura, Kubernetes, Docker y DevOps
-- Kevin — Desarrollo Backend
+- Michael Coronado
+- Kevin Panata
 
 ---
 
@@ -152,6 +152,42 @@ Todos los Pods deben encontrarse en estado **Running**.
 
 # Variables de Entorno
 
+## ConfigMap
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cavalocal-config
+data:
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  MONGO_HOST: "mongodb"
+  MONGO_PORT: "27017"
+  MONGO_DB: "audit_db"
+  POSTGRES_HOST: "postgres"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "cavalocal"
+```
+
+## Secret
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cavalocal-secrets
+type: Opaque
+data:
+  RABBITMQ_DEFAULT_USER: "Z3Vlc3Q="
+  RABBITMQ_DEFAULT_PASS: "Z3Vlc3Q="
+  MONGO_INITDB_ROOT_USERNAME: "YWRtaW4="
+  MONGO_INITDB_ROOT_PASSWORD: "YWRtaW4="
+  POSTGRES_USER: "YWRtaW4="
+  POSTGRES_PASSWORD: "YWRtaW4="
+  JWT_SECRET: "bXlfc3VwZXJfc2VjcmV0X2tleQ=="
+```
+
 ## MongoDB
 
 ```
@@ -175,6 +211,11 @@ JWT_SECRET
 GOOGLE_CLIENT_ID
 MAIL_USER
 MAIL_APP_PASSWORD
+POSTGRES_HOST
+POSTGRES_PORT
+POSTGRES_DB
+POSTGRES_USER
+POSTGRES_PASSWORD
 ```
 
 # Secrets
