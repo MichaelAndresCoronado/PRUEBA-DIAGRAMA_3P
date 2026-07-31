@@ -16,6 +16,8 @@
 
 La solución implementa una arquitectura de microservicios desplegada sobre Kubernetes. El siguiente diagrama ilustra los **Pods**, **Servicios** y el **Flujo de Red** interno:
 
+![Diagrama de Arquitectura](1.jpeg)
+
 ```mermaid
 flowchart TB
 
