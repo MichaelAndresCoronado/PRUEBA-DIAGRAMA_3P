@@ -164,11 +164,31 @@ end
    ```
 
 ### Opción 3: Script de Despliegue Automático (Minikube en Windows)
-Disponemos de un script `deploy.ps1` que realiza todo el proceso automáticamente:
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\deploy.ps1
-```
+Disponemos de un script `deploy.ps1` que automatiza todo el proceso (inicio de Minikube, construcción de imágenes, despliegue de manifiestos y espera de Pods).
+
+**Paso a paso para su ejecución:**
+
+1. **Abrir PowerShell como Administrador:**
+   Busca "PowerShell" en el menú de inicio de Windows, haz clic derecho y selecciona **"Ejecutar como administrador"**.
+
+2. **Navegar a la carpeta del repositorio clonado:**
+   ```powershell
+   cd ruta\hacia\conjunta-distribuidas
+   ```
+
+3. **Habilitar la ejecución de scripts (solo si está bloqueada):**
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   ```
+   *Nota: Si el sistema pide confirmación, escribe `S` (Sí) y presiona Enter.*
+
+4. **Ejecutar el script:**
+   ```powershell
+   .\deploy.ps1
+   ```
+
+5. **Esperar a la confirmación:**
+   El script mostrará el progreso paso a paso. Al finalizar, te indicará que todos los Pods están en estado **Running** y te presentará el sistema funcional.
 
 ---
 
