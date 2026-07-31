@@ -4,7 +4,7 @@
 
 **Universidad de las Fuerzas Armadas ESPE**
 
-**Integrantes (Trabajo en Parejas):**
+**EXAMEN 3 PARCIAL**
 - Michael Coronado
 - Kevin Panata
 
@@ -86,12 +86,12 @@ end
 
 ### Requisitos Previos
 - Docker Desktop
-- Minikube o Kind
+- Minikube
 - kubectl
 - Git
 - PowerShell o Terminal Bash
 
-### Opción 1: Minikube (Recomendado)
+### Despliegue Manual con Minikube
 
 1. **Clonar el repositorio:**
    ```bash
@@ -135,60 +135,6 @@ end
    kubectl get ingress
    ```
    *Nota: Todos los Pods deben estar en estado **Running**.*
-
-### Opción 2: Kind
-
-1. **Crear el clúster con Kind:**
-   ```bash
-   kind create cluster --name cavalocal
-   ```
-
-2. **Construir las imágenes Docker localmente:**
-   ```bash
-   docker build -t cavalocal-backend ./backend
-   docker build -t cavalocal-audit ./audit-service
-   docker build -t cavalocal-frontend ./web
-   ```
-
-3. **Cargar las imágenes en Kind:**
-   ```bash
-   kind load docker-image cavalocal-backend --name cavalocal
-   kind load docker-image cavalocal-audit --name cavalocal
-   kind load docker-image cavalocal-frontend --name cavalocal
-   ```
-
-4. **Aplicar y verificar manifiestos:**
-   ```bash
-   kubectl apply -f k8s/
-   kubectl get pods
-   ```
-
-### Opción 3: Script de Despliegue Automático (Minikube en Windows)
-Disponemos de un script `deploy.ps1` que automatiza todo el proceso (inicio de Minikube, construcción de imágenes, despliegue de manifiestos y espera de Pods).
-
-**Paso a paso para su ejecución:**
-
-1. **Abrir PowerShell como Administrador:**
-   Busca "PowerShell" en el menú de inicio de Windows, haz clic derecho y selecciona **"Ejecutar como administrador"**.
-
-2. **Navegar a la carpeta del repositorio clonado:**
-   ```powershell
-   cd ruta\hacia\conjunta-distribuidas
-   ```
-
-3. **Habilitar la ejecución de scripts (solo si está bloqueada):**
-   ```powershell
-   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-   ```
-   *Nota: Si el sistema pide confirmación, escribe `S` (Sí) y presiona Enter.*
-
-4. **Ejecutar el script:**
-   ```powershell
-   .\deploy.ps1
-   ```
-
-5. **Esperar a la confirmación:**
-   El script mostrará el progreso paso a paso. Al finalizar, te indicará que todos los Pods están en estado **Running** y te presentará el sistema funcional.
 
 ---
 
@@ -285,3 +231,33 @@ Una vez configurado todo lo anterior, el sistema estará disponible en las sigui
 - **Dashboard Principal:** [http://conjunta3p.espe.edu.ec/](http://conjunta3p.espe.edu.ec/)
 - **API Backend (Swagger / Rutas REST):** [http://conjunta3p.espe.edu.ec/api](http://conjunta3p.espe.edu.ec/api)
 - **Servicio de Auditoría:** [http://conjunta3p.espe.edu.ec/api/audit](http://conjunta3p.espe.edu.ec/api/audit)
+
+---
+
+## 6. Despliegue Automático mediante Script (Minikube en Windows)
+
+Si prefieres no ejecutar los comandos manualmente, disponemos de un script `deploy.ps1` que automatiza todo el proceso (inicio de Minikube, construcción de imágenes, despliegue de manifiestos y espera de Pods).
+
+**Paso a paso para su ejecución:**
+
+1. **Abrir PowerShell como Administrador:**
+   Busca "PowerShell" en el menú de inicio de Windows, haz clic derecho y selecciona **"Ejecutar como administrador"**.
+
+2. **Navegar a la carpeta del repositorio clonado:**
+   ```powershell
+   cd ruta\hacia\conjunta-distribuidas
+   ```
+
+3. **Habilitar la ejecución de scripts (solo si está bloqueada):**
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   ```
+   *Nota: Si el sistema pide confirmación, escribe `S` (Sí) y presiona Enter.*
+
+4. **Ejecutar el script:**
+   ```powershell
+   .\deploy.ps1
+   ```
+
+5. **Esperar a la confirmación:**
+   El script mostrará el progreso paso a paso. Al finalizar, te indicará que todos los Pods están en estado **Running** y te presentará el sistema funcional.
