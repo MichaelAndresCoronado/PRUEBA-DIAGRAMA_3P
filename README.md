@@ -31,7 +31,7 @@ La solución implementa una arquitectura de microservicios desplegada sobre Kube
 ## Diagrama de Arquitectura (Pods, Services y Flujo de Red)
 
 ```mermaid
-graph TD
+flowchart TB
 
 classDef user fill:#f1f8ff,stroke:#0366d6,color:#000;
 classDef ingress fill:#fff8f2,stroke:#ea4aaa,color:#000;
@@ -48,49 +48,39 @@ I[Ingress Controller<br/>conjunta3p.espe.edu.ec]:::ingress
 U --> I
 
 subgraph Kubernetes Cluster
+direction TB
 
   subgraph Frontend Layer
-  FS[frontend-svc]:::service
-  FP[Frontend<br/>Nginx + JS]:::frontend
-  FS --> FP
+  direction LR
+  FS[frontend-svc]:::service --> FP[Frontend<br/>Nginx + JS]:::frontend
   end
 
   subgraph Backend Layer
-  BS[backend-svc]:::service
-  BP[Backend<br/>NestJS]:::backend
-  BS --> BP
+  direction LR
+  BS[backend-svc]:::service --> BP[Backend<br/>NestJS]:::backend
   end
 
   subgraph Audit Layer
-  AS[audit-svc]:::service
-  A1[Audit Replica 1]:::audit
-  A2[Audit Replica 2]:::audit
-  AS --> A1
-  AS --> A2
+  direction LR
+  AS[audit-svc]:::service --> A1[Audit Replica 1]:::audit
+  AS --> A2[Audit Replica 2]:::audit
   end
 
   subgraph Messaging and Data
-  RS[rabbitmq-svc]:::service
-  MS[mongodb-svc]:::service
-  RB[(RabbitMQ)]:::rabbit
-  DB[(MongoDB)]:::mongo
-  RS --> RB
-  MS --> DB
+  direction LR
+  RS[rabbitmq-svc]:::service --> RB[(RabbitMQ)]:::rabbit
+  MS[mongodb-svc]:::service --> DB[(MongoDB)]:::mongo
   end
 
   I --> FS
   I --> BS
   I --> AS
-
   BP -->|REST| DB
   BP -->|Publish Event| RB
-
   A1 -->|Consume| RB
   A2 -->|Consume| RB
-
   A1 -->|Guardar Auditoría| DB
   A2 -->|Guardar Auditoría| DB
-
   A1 -->|SSE| FP
   A2 -->|SSE| FP
 
@@ -114,51 +104,78 @@ end
 ## Requisitos
 
 - Docker Desktop
-- Minikube
+- Minikube o Kind
 - kubectl
 - Git
 - PowerShell
 
-## Clonar
+## Opción 1: Minikube
+
+1. Clona el repositorio.
 
 ```bash
 git clone <url>
 cd CavaLocal
 ```
 
-## Levantar Minikube
+2. Inicia Minikube y habilita los complementos necesarios.
 
-```bash
+```powershell
 minikube start --driver=docker
 minikube addons enable ingress
 minikube addons enable dashboard
 ```
 
-## Construir imágenes
+3. Conecta Docker al clúster de Minikube para construir las imágenes dentro del entorno local.
 
-```bash
-eval $(minikube docker-env)
+```powershell
+& minikube -p minikube docker-env --shell powershell | Invoke-Expression
+```
 
+4. Construye las imágenes del proyecto.
+
+```powershell
 docker build -t cavalocal-backend ./backend
 docker build -t cavalocal-audit ./audit-service
 docker build -t cavalocal-frontend ./web
 ```
 
-## Aplicar manifiestos
+5. Aplica los manifiestos de Kubernetes.
 
-```bash
+```powershell
 kubectl apply -f k8s/
 ```
 
-## Verificar funcionamiento
+6. Verifica el estado del clúster.
 
-```bash
+```powershell
 kubectl get pods
 kubectl get svc
 kubectl get ingress
 ```
 
-Todos los Pods deben encontrarse en estado **Running**.
+Todos los Pods deben quedar en estado **Running** y el Ingress debe resolver el dominio configurado.
+
+## Opción 2: Kind
+
+1. Crea el clúster con Kind.
+
+```powershell
+kind create cluster --name cavalocal
+```
+
+2. Carga las imágenes Docker en el clúster.
+
+```powershell
+docker build -t cavalocal-backend ./backend
+docker build -t cavalocal-audit ./audit-service
+docker build -t cavalocal-frontend ./web
+kind load docker-image cavalocal-backend --name cavalocal
+kind load docker-image cavalocal-audit --name cavalocal
+kind load docker-image cavalocal-frontend --name cavalocal
+```
+
+3. Aplica los manifiestos y verifica el funcionamiento con `kubectl get pods`, `kubectl get svc` y `kubectl get ingress`.
 
 ---
 
@@ -198,6 +215,31 @@ data:
   POSTGRES_USER: "YWRtaW4="
   POSTGRES_PASSWORD: "YWRtaW4="
   JWT_SECRET: "bXlfc3VwZXJfc2VjcmV0X2tleQ=="
+```
+
+## Inyección segura en los Deployments
+
+Las variables no sensibles deben ir en el `ConfigMap` y las credenciales en `Secret`. Luego se inyectan en cada `Deployment` con `envFrom`.
+
+```yaml
+envFrom:
+  - configMapRef:
+      name: cavalocal-config
+  - secretRef:
+      name: cavalocal-secrets
+```
+
+Si prefieres crear el `Secret` desde consola en vez de escribirlo a mano, puedes usar:
+
+```powershell
+kubectl create secret generic cavalocal-secrets `
+  --from-literal=RABBITMQ_DEFAULT_USER=guest `
+  --from-literal=RABBITMQ_DEFAULT_PASS=guest `
+  --from-literal=MONGO_INITDB_ROOT_USERNAME=admin `
+  --from-literal=MONGO_INITDB_ROOT_PASSWORD=admin `
+  --from-literal=POSTGRES_USER=admin `
+  --from-literal=POSTGRES_PASSWORD=admin `
+  --from-literal=JWT_SECRET=my_super_secret_key
 ```
 
 ## MongoDB
@@ -246,6 +288,8 @@ Colocar los valores codificados dentro de `k8s/secrets.yaml`.
 
 # Configuración del archivo hosts
 
+Para acceder al dominio `conjunta3p.espe.edu.ec`, agrega la IP del clúster al archivo `hosts`.
+
 Obtener IP:
 
 ```bash
@@ -272,6 +316,8 @@ Agregar:
 IP_MINIKUBE conjunta3p.espe.edu.ec
 ```
 
+En Windows, abre el archivo como administrador. En Linux/macOS usa permisos de superusuario.
+
 ---
 
 # Accesos
@@ -284,7 +330,7 @@ IP_MINIKUBE conjunta3p.espe.edu.ec
 
 # Despliegue Automático
 
-El proyecto incluye el script **deploy.ps1**, el cual automatiza todo el proceso.
+El proyecto incluye el script **deploy.ps1**, el cual automatiza el flujo completo para Minikube.
 
 ## Ejecutar
 
